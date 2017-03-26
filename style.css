@@ -1,0 +1,23 @@
+body {
+    background: #ede9de;
+}
+
+.button {
+    margin-bottom: 5vh;
+    float: right;
+    clear: both;
+    border: 2px solid blue;
+    border-radius: 10px;
+    background: #cedbe9;
+    /* Old browsers */
+    background: -moz-linear-gradient(-45deg, #cedbe9 0%, #3a84c3 10%, #4bb8f0 26%, #4bb8f0 26%, #aac5de 39%, #6199c7 50%, #419ad6 59%, #3a8bc2 84%, #26558b 100%);
+    /* FF3.6-15 */
+    background: -webkit-linear-gradient(-45deg, #cedbe9 0%, #3a84c3 10%, #4bb8f0 26%, #4bb8f0 26%, #aac5de 39%, #6199c7 50%, #419ad6 59%, #3a8bc2 84%, #26558b 100%);
+    /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(135deg, #cedbe9 0%, #3a84c3 10%, #4bb8f0 26%, #4bb8f0 26%, #aac5de 39%, #6199c7 50%, #419ad6 59%, #3a8bc2 84%, #26558b 100%);
+    /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#cedbe9', endColorstr='#26558b', GradientType=1);
+    /* IE6-9 fallback on horizontal gradient */
+    width: 10vw;
+    height: 10vh;
+}

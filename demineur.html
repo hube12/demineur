@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Demineur</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="grille" style="width:80%;display:inline-block"></div>
+    <div id="buttons" style='float:right'>
+        <button onclick="change()" class="button">Drapeau</button>
+        <!--<button onclick="allInOne()" class="button">Show me all in once</button>-->
+        <button onclick="location.reload(true)" class="button">Create a new one</button>
+    </div>
+
+</body>
+</html>
+<script type="text/javascript" src="brython.js"></script>
+<script type="text/javascript" src="brython_stdlib.js"></script>
+<script>
+    function reloa(){
+        location.reload(true)
+    }
+    function goforit(){
+        v=JSON.parse(localStorage.getItem('"l"'))
+        g=JSON.parse(localStorage.getItem('"g"'))
+        e=localStorage.getItem('e')
+        
+        for (i=0;i<20;i++){
+            for (j=0;j<20;j++){
+                var cell=document.getElementById(i*20+j)
+                if (e){
+                    if (g[i][j]=="*"){
+                        cell.innerHTML="X";
+                        cell.style.backgroundColor="indianred";
+                    }
+                    else if (g[i][j]==0){
+                        cell.style.backgroundColor="beige";
+                    }
+                    else {
+                        cell.innerHTML=g[i][j];
+                        cell.style.backgroundColor="mediumaquamarine";
+                    }
+                }
+                else{
+                    if (v[i][j]==1 ){
+                        if (g[i][j]==0){
+                            cell.style.backgroundColor="beige";
+                        }
+                        else{
+                            cell.innerHTML=g[i][j];
+                            cell.style.backgroundColor="mediumaquamarine";
+                        }
+                    }
+                }
+            }
+        }
+    }
+    window.onload=function(){
+        localStorage.clear()
+        tab=document.createElement("table")
+        for (i=0;i<20;i++){
+            row=tab.insertRow(0)
+            for (j=0;j<20;j++){
+                cell=row.insertCell(0)
+                cell.style.width="4vh";
+                cell.style.height="4vh";
+                cell.style.backgroundColor="grey";
+                cell.style.textAlign="center";
+                cell.id=(19-i)*20+(19-j);
+                cell.setAttribute("onclick","mouvementDemineur(this.id%20,Math.floor(this.id/20))");                
+            }
+        }
+        grille=document.getElementById("grille")
+        if (!grille.hasChildNodes()) {
+            grille.appendChild(tab);
+        };
+        brython({debug:1, cache:'none', static_stdlib_import:true})
+    }
+    
+</script>
+<script type="text/python3">
+from browser import window,console,confirm
+from browser.local_storage import storage
+from browser.object_storage import ObjectStorage
+import random
+grille = [[0] * 20 for i in range(20)]
+pos = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+revele = [[0] * 20 for i in range(20)]
+
+
+
+# functions
+def bombe():
+    x = random.randint(0, 19)
+    y = random.randint(0, 19)
+    while grille[y][x]=="*":
+        x = random.randint(0, 9)
+        y = random.randint(0, 9)
+    grille[y][x] = "*"
+    number(x, y)
+def output(g):
+    for col in g: print(" ".join(map(str, col)))
+def number(x, y):
+    for c in pos:
+        try:
+            if grille[y + c[0]][x + c[1]] != "*" and (y+c[0])>-1 and (c[1]+x)>-1:
+                grille[y + c[0]][x + c[1]] += 1
+        except:
+            pass
+def afficher(l):
+    object_storage = ObjectStorage(storage)
+    object_storage["l"]=l
+    window.goforit()
+
+def onclick(x, y):
+    try:
+        if grille[y][x] == "*":
+            #output()
+            #print("perdu")
+            return 1
+        if grille[y][x] != 0:
+            revele[y][x] = 1
+            return 0
+        grille[y][x] = "@"
+        revele[y][x] = 1
+        for c in pos:
+            if x+c[0]>-1:
+                if y+c[1]>-1:
+                    onclick(x + c[0], y + c[1])
+    except:
+        pass
+
+def onclickExecuted(x,y):
+    console.log(x,y,grille[y][x])
+    j=onclick(x,y)
+    console.log(j)
+    if j:
+        storage["e"]=str(j)
+        afficher(grille)
+        h=confirm("Tu as perdu, veux-tu recommencer?")
+        if h:
+            window.reloa()
+        return
+    afficher(revele)
+def main():
+    for loop in range(int(20 * 20 * 0.15)):
+        bombe()
+    object_storage = ObjectStorage(storage)
+    object_storage["g"]=grille
+    output(grille)
+main()
+window.mouvementDemineur = onclickExecuted
+</script>
