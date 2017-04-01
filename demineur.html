@@ -10,7 +10,7 @@
 <body>
     <div id="grille" style="width:80%;display:inline-block"></div>
     <div id="buttons" style='float:right'>
-        <button onclick="change()" class="button">Drapeau</button>
+        <button id="drapeau" onclick="change()" class="button">Normal</button>
         <!--<button onclick="allInOne()" class="button">Show me all in once</button>-->
         <button onclick="location.reload(true)" class="button">Create a new one</button>
     </div>
@@ -20,8 +20,59 @@
 <script type="text/javascript" src="brython.js"></script>
 <script type="text/javascript" src="brython_stdlib.js"></script>
 <script>
+    function waitForIt(){
+        setTimeout(function(){
+            h=confirm("Tu as perdu, veux-tu recommencer?")
+            if (h){
+                reloa()
+            }
+        }, 500);
+    }
+    function test(id){
+        m=document.getElementById(id)
+        
+        if (window.getComputedStyle(m, null).getPropertyValue("background-image")!="none"){
+            return false
+        }
+        return true
+    }
+    function change(){
+        h=document.getElementById("drapeau")
+        if (h.textContent=="Drapeau"){
+            h.textContent="Normal";
+            localStorage.setItem("aut","0")
+        }
+        else{
+            h.textContent="Drapeau";
+            localStorage.setItem("aut","1")
+        }
+    }
+    function putIt(id){
+        m=document.getElementById(id)
+        if (parseInt(localStorage.getItem("aut")) && m.textContent==""){ 
+            v=JSON.parse(localStorage.getItem('"l"'))
+            if (window.getComputedStyle(m, null).getPropertyValue("background-image") =="none"){
+                m.style.backgroundImage='url("drapeau.png")';
+                m.style.backgroundRepeat="no-repeat"
+                v[id%20][Math.floor(id/20)]="d"
+            }
+            
+            else if (m.style.backgroundImage='url("drapeau.png")'){
+                m.style.background="grey";
+                if (v[id%20][Math.floor(id/20)]=="d"){
+                    v[id%20][Math.floor(id/20)]=0
+                }
+            }
+            
+        }
+    }
     function reloa(){
         location.reload(true)
+    }
+    function removeDrap(cell){
+        if (window.getComputedStyle(cell, null).getPropertyValue("background-image") !="none"){
+            cell.style.backgroundImage="";
+        }
     }
     function goforit(){
         v=JSON.parse(localStorage.getItem('"l"'))
@@ -31,7 +82,9 @@
         for (i=0;i<20;i++){
             for (j=0;j<20;j++){
                 var cell=document.getElementById(i*20+j)
+                
                 if (e){
+                    removeDrap(cell)
                     if (g[i][j]=="*"){
                         cell.innerHTML="X";
                         cell.style.backgroundColor="indianred";
@@ -46,7 +99,9 @@
                 }
                 else{
                     if (v[i][j]==1 ){
+                        removeDrap(cell)
                         if (g[i][j]==0){
+                            
                             cell.style.backgroundColor="beige";
                         }
                         else{
@@ -57,9 +112,18 @@
                 }
             }
         }
+        if(localStorage.getItem('"f"')==localStorage.getItem('"l"')){
+            setTimeout(function(){
+             h=confirm("bravo tu as gagné!,veux tu recommencer?");
+            if (h){
+                reloa()
+            }
+        }, 500);
+        }
     }
     window.onload=function(){
         localStorage.clear()
+        localStorage.setItem("aut",0)
         tab=document.createElement("table")
         for (i=0;i<20;i++){
             row=tab.insertRow(0)
@@ -73,6 +137,7 @@
                 cell.setAttribute("onclick","mouvementDemineur(this.id%20,Math.floor(this.id/20))");                
             }
         }
+        tab.style.margin="auto"
         grille=document.getElementById("grille")
         if (!grille.hasChildNodes()) {
             grille.appendChild(tab);
@@ -85,11 +150,12 @@
 from browser import window,console,confirm
 from browser.local_storage import storage
 from browser.object_storage import ObjectStorage
-import random
+import random,time
+object_storage = ObjectStorage(storage)
 grille = [[0] * 20 for i in range(20)]
 pos = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
 revele = [[0] * 20 for i in range(20)]
-
+final=[[1]*20 for i in range(20)]
 
 
 # functions
@@ -100,6 +166,7 @@ def bombe():
         x = random.randint(0, 9)
         y = random.randint(0, 9)
     grille[y][x] = "*"
+    final[y][x]=0
     number(x, y)
 def output(g):
     for col in g: print(" ".join(map(str, col)))
@@ -111,7 +178,6 @@ def number(x, y):
         except:
             pass
 def afficher(l):
-    object_storage = ObjectStorage(storage)
     object_storage["l"]=l
     window.goforit()
 
@@ -134,23 +200,27 @@ def onclick(x, y):
         pass
 
 def onclickExecuted(x,y):
-    console.log(x,y,grille[y][x])
-    j=onclick(x,y)
-    console.log(j)
-    if j:
-        storage["e"]=str(j)
-        afficher(grille)
-        h=confirm("Tu as perdu, veux-tu recommencer?")
-        if h:
-            window.reloa()
-        return
-    afficher(revele)
+    u=window.test(y*20+x)
+    
+    if not int(storage["aut"]) and u:
+        
+        j=onclick(x,y)
+        if j:
+            storage["e"]=str(j)
+            afficher(grille)
+            window.waitForIt()
+            return
+        afficher(revele)
+    else:
+        window.putIt(y*20+x)
 def main():
-    for loop in range(int(20 * 20 * 0.15)):
+    object_storage["l"]=grille
+    for loop in range(int(20*20*0.15)):
         bombe()
-    object_storage = ObjectStorage(storage)
     object_storage["g"]=grille
     output(grille)
+    object_storage["f"]=final
+    
 main()
 window.mouvementDemineur = onclickExecuted
 </script>
