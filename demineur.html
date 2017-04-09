@@ -54,6 +54,7 @@
             if (window.getComputedStyle(m, null).getPropertyValue("background-image") =="none"){
                 m.style.backgroundImage='url("drapeau.png")';
                 m.style.backgroundRepeat="no-repeat"
+                m.style.backgroundSize="cover"   
                 v[id%20][Math.floor(id/20)]="d"
             }
             
@@ -86,8 +87,9 @@
                 if (e){
                     removeDrap(cell)
                     if (g[i][j]=="*"){
-                        cell.innerHTML="X";
-                        cell.style.backgroundColor="indianred";
+                        cell.style.backgroundImage='url("bomb.jpg")';
+                        cell.style.backgroundRepeat="no-repeat"
+                        cell.style.backgroundSize="cover"   
                     }
                     else if (g[i][j]==0){
                         cell.style.backgroundColor="beige";
@@ -103,10 +105,14 @@
                         if (g[i][j]==0){
                             
                             cell.style.backgroundColor="beige";
+                            cell.style.width="4vh";
+                            cell.style.height="4vh";
                         }
                         else{
                             cell.innerHTML=g[i][j];
                             cell.style.backgroundColor="mediumaquamarine";
+                            cell.style.width="4vh";
+                            cell.style.height="4vh";
                         }
                     }
                 }
